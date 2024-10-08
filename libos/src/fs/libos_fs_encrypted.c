@@ -619,14 +619,17 @@ int encrypted_file_set_size(struct libos_encrypted_file* enc, file_off_t size) {
 }
 
 int encrypted_file_rename(struct libos_encrypted_file* enc, const char* new_uri) {
+    log_warning("TPE9313 | encrypted_file_rename: %s", new_uri);
     assert(enc->pf);
 
     int ret;
     char* new_normpath = NULL;
 
     char* new_uri_copy = strdup(new_uri);
-    if (!new_uri_copy)
+    if (!new_uri_copy) {
+        log_warning("TPE9313 | encrypted_file_rename: new_uri_copy is NULL");
         return -ENOMEM;
+    }
 
     assert(strstartswith(enc->uri, URI_PREFIX_FILE));
     const char* old_path = enc->uri + static_strlen(URI_PREFIX_FILE);
@@ -636,12 +639,16 @@ int encrypted_file_rename(struct libos_encrypted_file* enc, const char* new_uri)
 
     size_t new_normpath_size = strlen(new_path) + 1;
     new_normpath = malloc(new_normpath_size);
+
+    log_warning("TPE9313 | encrypted_file_rename: old_path%s, new_path: %s, new_normpath_size: %zu", old_path, new_path, new_normpath_size);
     if (!new_normpath) {
+        log_warning("TPE9313 | encrypted_file_rename: new_normpath is NULL");
         ret = -ENOMEM;
         goto out;
     }
 
     if (!get_norm_path(new_path, new_normpath, &new_normpath_size)) {
+        log_warning("TPE9313 | encrypted_file_rename: INVALID path/size");
         ret = -EINVAL;
         goto out;
     }
@@ -674,6 +681,7 @@ int encrypted_file_rename(struct libos_encrypted_file* enc, const char* new_uri)
     ret = 0;
 
 out:
+    log_warning("TPE9313 | encrypted_file_rename: failed");
     free(new_normpath);
     free(new_uri_copy);
     return ret;
